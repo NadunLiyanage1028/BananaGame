@@ -1,20 +1,40 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const authRoutes = require('./routes/auth'); // Updated path to authentication routes
+const express = require("express")
+const mongoose = require("mongoose")
+const cors = require("cors")
+const User = require("./model/User")
 
-const app = express();
+const app = express()
+app.use(express.json())
+app.use(cors())
 
-// Middleware to parse JSON requests
-app.use(express.json());
+mongoose.connect("mongodb://127.0.0.1:27017/bananaGameDB");
 
-// Connect to MongoDB
-mongoose.connect('mongodb://localhost:27017/bananaGameDB')
-    .then(() => console.log("Connected to MongoDB"))
-    .catch((err) => console.error("Failed to connect to MongoDB", err));
 
-// Use authentication routes for the /api/auth endpoint
-app.use('/api/auth', authRoutes);
 
-// Start the server
-const PORT = process.env.PORT || 4000;  // Changed port to 4000
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+app.post("/login", (req, res) => {
+    const {email, password} = req.body;
+    User.findOne({email : email})
+    .then(user => {
+        if(user) {
+            if(user.password === password){
+                res.json("Success")
+            }else{
+                res.json("The password is incorrect")
+            }
+        }else{
+            res.json("No record existed")
+        }
+    })
+})
+
+app.post("/signup", (req, res) => {
+    User.create(req.body)``
+    .then(user => res.json(user))
+    .catch(err => res.json(err))
+})
+
+
+app.listen(4000, () => {
+    console.log("server is running")
+})
